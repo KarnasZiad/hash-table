@@ -1,0 +1,132 @@
+#include <iostream>
+
+using namespace std;
+
+struct KeyValuePair {
+    int key;
+    int value;
+    bool isOccupied;
+    bool isDeleted;
+};
+
+class HashTable {
+private:
+    KeyValuePair *table; // Tableau de structures KeyValuePair
+    int size;
+
+public:
+    HashTable(int size) : size(size) {
+        table = new KeyValuePair[size]; // Allouer de la mémoire pour le tableau
+        for (int i = 0; i < size; ++i) {
+            table[i].key = 0;
+            table[i].value = 0;
+            table[i].isOccupied = false;
+            table[i].isDeleted = false;
+        }
+    }
+
+    ~HashTable() {
+        delete[] table; // Libérer la mémoire allouée
+    }
+
+    // Fonction de hachage simple
+    int hashFunction(int key) {
+        return key % size;
+    }
+
+    // Insérer une paire (key, value)
+    void insert(int key, int value) {
+        int index = hashFunction(key);
+        int originalIndex = index;
+        while (table[index].isOccupied && !table[index].isDeleted && table[index].key != key) {
+            index = (index + 1) % size;
+            if (index == originalIndex) {
+                cout << "Table is full. Unable to insert the pair." << endl;
+                return;
+            }
+        }
+        table[index].key = key;
+        table[index].value = value;
+        table[index].isOccupied = true;
+        table[index].isDeleted = false;
+    }
+
+    // Obtenir la valeur associée à une clé
+    int get(int key) {
+        int index = hashFunction(key);
+        int originalIndex = index;
+        while (table[index].isOccupied) {
+            if (!table[index].isDeleted && table[index].key == key) {
+                return table[index].value;
+            }
+            index = (index + 1) % size;
+            if (index == originalIndex) {
+                break;
+            }
+        }
+        cout << "Clé non trouvée." << endl;
+        return -1; // Valeur de retour pour indiquer une erreur
+    }
+
+    // Supprimer une paire en fonction de la clé
+    void remove(int key) {
+        int index = hashFunction(key);
+        int originalIndex = index;
+        while (table[index].isOccupied) {
+            if (!table[index].isDeleted && table[index].key == key) {
+                table[index].isDeleted = true;
+                return;
+            }
+            index = (index + 1) % size;
+            if (index == originalIndex) {
+                break;
+            }
+        }
+        cout << "Clé non trouvée." << endl;
+    }
+
+    // Afficher toutes les paires dans la table
+    void list() {
+        for (int i = 0; i < size; ++i) {
+            if (table[i].isOccupied && !table[i].isDeleted) {
+                cout << "Clé: " << table[i].key << ", Valeur: " << table[i].value << endl;
+            }
+        }
+    }
+
+    // Effacer toutes les paires dans la table
+    void clear() {
+        for (int i = 0; i < size; ++i) {
+            table[i].key = 0;
+            table[i].value = 0;
+            table[i].isOccupied = false;
+            table[i].isDeleted = false;
+        }
+    }
+};
+
+int main() {
+    HashTable ht(10);
+
+    ht.insert(5, 10);
+    ht.insert(15, 20);
+    ht.insert(25, 30);
+
+    cout << "Liste des paires dans la table:" << endl;
+    ht.list();
+
+    cout << "Valeur associée à la clé 5: " << ht.get(5) << endl;
+    cout << "Valeur associée à la clé 10: " << ht.get(10) << endl;
+
+    ht.remove(15);
+
+    cout << "Après suppression de la clé 15:" << endl;
+    ht.list();
+
+    ht.clear();
+
+    cout << "Après effacement de la table:" << endl;
+    ht.list();
+
+    return 0;
+}
